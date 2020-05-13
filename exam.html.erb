@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>ゴーヤ情報</title>
+  </head>
+  <body>
+    <h1>ゴーヤ情報</h1>
+    <% require 'pg'%>
+    <% connection = PG::connect(dbname: "goya") %>
+    <% connection.internal_encoding = "UTF-8" %>
+    <% result1 = connection.exec("select * from crops join prices on crops.give_for = prices.give_for where not (crops.give_for = '自家消費')order by crops.give_for;") %>
+    <% result2 = connection.exec("select * from crops where quality = false order by weight desc;") %>
+    <% data1 = [] %>
+    <% data2 = [] %>
+    <% result1.each do |record| %>
+      <%  data1 << "<tr><td>渡し先：#{record["give_for"]}</td>　<td>売値：#{record["price"]}</td></tr>" %>
+    <% end %>
+    <% result2.each do |record| %>
+      <%  data2 << "<tr><td>長さ：#{record["length"]}</td> <td>重さ： #{record["weight"]}</td> <td>品質：#{record["quality"]}</td></tr>" %>
+    <% end %>
+    <p>ボタンを押すと情報を表示します。</p>
+    <form action="goya_info.cgi" method="POST">
+      <input type="hidden" name="goya1" value="<%= data1.join(' ') %>">
+      <input type="submit" name="button" value="人にあげたゴーヤ一覧">
+    <input type="hidden" name="goya2" value="<%= data2.join(' ') %>">
+    <input type="submit" name="button" value="品質が悪かったゴーヤ一覧">
+    </form>
+
+  </body>
+</html>
